@@ -9,10 +9,10 @@ const urlSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    longUrl: {
+    longUrl: {    
       type: String,
       required: true,
-    }, //valid url
+    }, 
     shortUrl: {
       type: String,
       required: true,
