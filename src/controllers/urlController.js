@@ -29,7 +29,7 @@ const createUrl = async function (req, res) {
         .status(400)
         .send({ status: false, msg: "Please provide valid long url" });
 
-    if (!validUrl.isUri(longUrl)) {
+    if (!validUrl.isUri(longUrl.trim())) {
       return res.status(400).send({ status: true, message: "Invalid Url" });
     }
 
@@ -74,4 +74,25 @@ const createUrl = async function (req, res) {
   }
 };
 
-module.exports = { createUrl };
+const getLinkWithShortUrl = async function (req, res) {
+  try {
+    // fetching urlCode from params
+    let urlCode = req.params.urlCode;
+
+    // search if urlCode already exist
+    const getPage = await urlModel.findOne({ urlCode: urlCode });
+
+    // if urlCode found then redirect it
+    if (getPage) {
+      return res.status(302).redirect(getPage.longUrl);
+    }
+    return res
+      .status(400)
+      .send({ status: false, message: "url does not exist" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({ status: false, message: err.message });
+  }
+};
+
+module.exports = { createUrl, getLinkWithShortUrl };

@@ -7,4 +7,7 @@ router.post("/test-me")
 
 router.post("/url/shorten", urlController.createUrl)
 
+router.get("/:urlCode", urlController.getLinkWithShortUrl)
+
+
 module.exports = router
