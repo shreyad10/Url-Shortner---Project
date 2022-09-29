@@ -38,7 +38,7 @@ const createUrl = async function (req, res) {
     if (uniqueUrl)
       return res.status(400).send({
         status: true,
-        message: "Url already shortened",
+        message: `provided ${uniqueUrl.longUrl} url exist in db`
       });
 
     // generate urlCode
