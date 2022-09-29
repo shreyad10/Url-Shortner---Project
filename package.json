@@ -1,0 +1,26 @@
+{
+  "name": "q",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shreyad10/Url-Shortner---Project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shreyad10/Url-Shortner---Project/issues"
+  },
+  "homepage": "https://github.com/shreyad10/Url-Shortner---Project#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "mongoose": "^6.6.2",
+    "nodemon": "^2.0.20",
+    "short-id": "^0.1.0-1",
+    "valid-url": "^1.0.9"
+  }
+}
