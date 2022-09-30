@@ -1,7 +1,7 @@
 const urlModel = require("../models/urlModel");
 const shortId = require("short-id");
 const validUrl = require("valid-url");
-const urlShortener = require("node-url-shortener");
+//const urlShortener = require("node-url-shortener");
 
 const isValid = function (value) {
   if (typeof value === "undefined" || value === null) return false;
@@ -38,7 +38,8 @@ const createUrl = async function (req, res) {
     if (uniqueUrl)
       return res.status(400).send({
         status: true,
-        message: `provided ${uniqueUrl.longUrl} url exist in db`
+        message: `provided ${uniqueUrl.longUrl} url exist in db`,
+        data:uniqueUrl
       });
 
     // generate urlCode
@@ -50,6 +51,7 @@ const createUrl = async function (req, res) {
       return res.status(400).send({
         status: true,
         message: "urlCode already exist",
+        data:urlCode
       });
 
     // creating shortUrl
@@ -85,6 +87,7 @@ const getLinkWithShortUrl = async function (req, res) {
     // if urlCode found then redirect it
     if (getPage) {
       return res.status(302).redirect(getPage.longUrl);
+     
     }
     return res
       .status(400)
