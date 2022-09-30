@@ -2,6 +2,7 @@ const urlModel = require("../models/urlModel");
 const shortId = require("short-id");
 const validUrl = require("valid-url");
 //const urlShortener = require("node-url-shortener");
+const isUrl = require("is-valid-http-url");
 
 const isValid = function (value) {
   if (typeof value === "undefined" || value === null) return false;
@@ -32,6 +33,15 @@ const createUrl = async function (req, res) {
     if (!validUrl.isUri(longUrl.trim())) {
       return res.status(400).send({ status: true, message: "Invalid Url" });
     }
+
+    if (!isUrl(longUrl.trim())) {
+      return res.status(400).send({ status: true, message: `Invalid Url format of ${longUrl}`  });
+    }
+
+    // if(!(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test())
+    // ){
+    //   return res.status(400).send({ status: true, message: "Invalid regex" })
+    // }
 
     // check if url already shortened
     let uniqueUrl = await urlModel.findOne({ longUrl: longUrl });
