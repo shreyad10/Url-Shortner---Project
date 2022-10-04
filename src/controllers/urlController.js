@@ -160,18 +160,5 @@ const getLinkWithShortUrl = async function (req, res) {
   }
 }
 
-// const deleteurl = async function (req, res) {
-//   try {
-//     const deldata = req.params.urlCode;
-//     let delurldata = await DEL_ASYNC(`${deldata}`);
-//     let data = JSON.parse(delurldata);
-
-//     if (!data) return res.status(400).send({ data: delurldata });
-//     else return res.status(302).redirect(data.longUrl);
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).send({ status: false, message: err.message });
-//   }
-// };
 
 module.exports = { createUrl, getLinkWithShortUrl};
