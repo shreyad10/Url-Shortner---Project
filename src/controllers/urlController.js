@@ -1,12 +1,9 @@
 const urlModel = require("../models/urlModel");
 const shortId = require("short-id");
 const validUrl = require("valid-url");
-<<<<<<< HEAD
 //const urlShortener = require("node-url-shortener");
 const isUrl = require("is-valid-http-url");
-=======
 const { default: mongoose } = require("mongoose");
->>>>>>> 49107b6fcd30f05f553116e4e65b7d866623bca8
 
 const isValid = function (value) {
   if (typeof value === "undefined" || value === null) return false;
@@ -49,7 +46,7 @@ const createUrl = async function (req, res) {
     if (!Object.keys(req.body).length > 0) {
       return res
         .status(400)
-        .send({ status: false, message: "Request body can't be empty" });
+        .send({ status: true, message: "Request body can't be empty" });
     }
 
     // fetch longUrl and baseurl
@@ -60,45 +57,50 @@ const createUrl = async function (req, res) {
     if (!isValid(longUrl))
       return res
         .status(400)
-        .send({ status: false, message: "Please provide valid long url" });
+        .send({ status: false, msg: "Please provide valid long url" });
 
     if (!validUrl.isUri(longUrl.trim())) {
-      return res.status(400).send({ status: false, message: "Invalid Url" });
+      return res.status(400).send({ status: true, message: "Invalid Url" });
     }
 
     if (!isUrl(longUrl.trim())) {
       return res.status(400).send({ status: true, message: `Invalid Url format of ${longUrl}`  });
     }
+    let urldata = await GET_ASYNC(`${longUrl}`)
+    let data = JSON.parse(urldata);
 
-    // if(!(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test())
-    // ){
-    //   return res.status(400).send({ status: true, message: "Invalid regex" })
-    // }
+    if(data) return res.status(400).send({
+      status: true,
+      message: `provided ${data.longUrl} url exist in redis`,
+      data: data
+    });
+    else  {
+    // check if url already shortened 
 
-    // check if url already shortened
-    let uniqueUrl = await urlModel.findOne({ longUrl: longUrl });
-    if (uniqueUrl)
+    let uniqueUrl = await urlModel.findOne( {longUrl: longUrl} );
+    if (uniqueUrl){
+    await SET_ASYNC(`${longUrl}`, JSON.stringify(uniqueUrl))
       return res.status(400).send({
         status: true,
         message: `provided ${uniqueUrl.longUrl} url exist in db`,
-        data:uniqueUrl
-      });
-
+        data: uniqueUrl
+      }); 
+    }
     // generate urlCode
-    let id = shortId.generate(longUrl);
+     let id = shortId.generate(longUrl);
 
-    // // check if urlCode already present
+    // check if urlCode already present
     let urlCode = await urlModel.findOne({ urlCode: id });
-    if (urlCode)
+    if (urlCode) {
+    await SET_ASYNC(`${longUrl}`, JSON.stringify(urlCode))
       return res.status(400).send({
         status: true,
         message: "urlCode already exist",
         data:urlCode
       });
-
+    }
     // creating shortUrl
     let shortUrl = baseUrl + id;
-
     let obj = {
       longUrl: longUrl,
       shortUrl: shortUrl,
@@ -107,12 +109,13 @@ const createUrl = async function (req, res) {
 
     // creating url document
     let url = await urlModel.create(obj);
-
+    await SET_ASYNC(`${longUrl}`, JSON.stringify(obj))
     return res.status(201).send({
       status: true,
       message: "created",
       data: url,
     });
+  }
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
   }
@@ -128,7 +131,7 @@ const getLinkWithShortUrl = async function (req, res) {
     const getPage = await urlModel.findOne({ urlCode: urlCode });
 
     // if urlCode found then redirect it
-    if (getPage) {
+    if (getPage) 
       return res.status(302).redirect(getPage.longUrl);
      
     //apply redis
@@ -138,8 +141,7 @@ const getLinkWithShortUrl = async function (req, res) {
       return res.status(302).redirect(data.longUrl);
     } else {
       // search if urlCode already exist
-      // const getPage = await urlModel.findOne({ urlCode: urlCode });
-
+      
       // if urlCode found then redirect it
       const getPage = await urlModel.findOne({ urlCode: urlCode });
 
@@ -156,20 +158,20 @@ const getLinkWithShortUrl = async function (req, res) {
     console.log(err);
     return res.status(500).send({ status: false, message: err.message });
   }
-};
+}
 
-const deleteurl = async function (req, res) {
-  try {
-    const deldata = req.params.urlCode;
-    let delurldata = await DEL_ASYNC(`${deldata}`);
-    let data = JSON.parse(delurldata);
+// const deleteurl = async function (req, res) {
+//   try {
+//     const deldata = req.params.urlCode;
+//     let delurldata = await DEL_ASYNC(`${deldata}`);
+//     let data = JSON.parse(delurldata);
 
-    if (!data) return res.status(400).send({ data: delurldata });
-    else return res.status(302).redirect(data.longUrl);
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send({ status: false, message: err.message });
-  }
-};
+//     if (!data) return res.status(400).send({ data: delurldata });
+//     else return res.status(302).redirect(data.longUrl);
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).send({ status: false, message: err.message });
+//   }
+// };
 
-module.exports = { createUrl, getLinkWithShortUrl, deleteurl };
+module.exports = { createUrl, getLinkWithShortUrl};
