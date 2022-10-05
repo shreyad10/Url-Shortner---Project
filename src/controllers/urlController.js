@@ -46,7 +46,7 @@ const createUrl = async function (req, res) {
     if (!Object.keys(req.body).length > 0) {
       return res
         .status(400)
-        .send({ status: true, message: "Request body can't be empty" });
+        .send({ status: false, message: "Request body can't be empty" });
     }
 
     // fetch longUrl and baseurl
@@ -70,7 +70,7 @@ const createUrl = async function (req, res) {
     let data = JSON.parse(urldata);
 
     if(data) return res.status(400).send({
-      status: true,
+      status: false,
       message: `provided ${data.longUrl} url exist in redis`,
       data: data
     });
@@ -81,7 +81,7 @@ const createUrl = async function (req, res) {
     if (uniqueUrl){
     await SET_ASYNC(`${longUrl}`, JSON.stringify(uniqueUrl))
       return res.status(400).send({
-        status: true,
+        status: false,
         message: `provided ${uniqueUrl.longUrl} url exist in db`,
         data: uniqueUrl
       }); 
@@ -94,7 +94,7 @@ const createUrl = async function (req, res) {
     if (urlCode) {
     await SET_ASYNC(`${longUrl}`, JSON.stringify(urlCode))
       return res.status(400).send({
-        status: true,
+        status: false,
         message: "urlCode already exist",
         data:urlCode
       });
