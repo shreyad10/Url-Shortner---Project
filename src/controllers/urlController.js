@@ -57,14 +57,14 @@ const createUrl = async function (req, res) {
     if (!isValid(longUrl))
       return res
         .status(400)
-        .send({ status: false, msg: "Please provide valid long url" });
+        .send({ status: false, message: "Please provide valid long url" });
 
     if (!validUrl.isUri(longUrl.trim())) {
-      return res.status(400).send({ status: true, message: "Invalid Url" });
+      return res.status(400).send({ status: false, message: "Invalid Url" });
     }
 
     if (!isUrl(longUrl.trim())) {
-      return res.status(400).send({ status: true, message: `Invalid Url format of ${longUrl}`  });
+      return res.status(400).send({ status: false, message: `Invalid Url format of ${longUrl}`  });
     }
     let urldata = await GET_ASYNC(`${longUrl}`)
     let data = JSON.parse(urldata);
@@ -126,13 +126,7 @@ const getLinkWithShortUrl = async function (req, res) {
     // fetching urlCode from params
     let urlCode = req.params.urlCode;
 
-
-    // search if urlCode already exist
-    const getPage = await urlModel.findOne({ urlCode: urlCode });
-
     // if urlCode found then redirect it
-    if (getPage) 
-      return res.status(302).redirect(getPage.longUrl);
      
     //apply redis
     let urldata = await GET_ASYNC(`${urlCode}`);
@@ -150,15 +144,27 @@ const getLinkWithShortUrl = async function (req, res) {
         return res.status(302).redirect(getPage.longUrl);
       }
       return res
-        .status(400)
+        .status(404)
         .send({ status: false, message: "url does not exist" });
 
     }
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send({ status: false, message: err.message });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
   }
 }
 
+// const deleteurl = async function (req, res) {
+//   try {
+//     const deldata = req.params.urlCode;
+//     let delurldata = await DEL_ASYNC(`${deldata}`);
+//     let data = JSON.parse(delurldata);
+
+//     if (!data) return res.status(400).send({ data: delurldata });
+//     else return res.status(302).redirect(data.longUrl);
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).send({ status: false, message: err.message });
+//   }
+// };
 
 module.exports = { createUrl, getLinkWithShortUrl};
