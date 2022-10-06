@@ -38,7 +38,6 @@ redisClient.on("connect", async function () {
 
 const SET_ASYNC = promisify(redisClient.SET).bind(redisClient);
 const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
-// const DEL_ASYNC = promisify(redisClient.DEL).bind(redisClient);
 
 const createUrl = async function (req, res) {
   try {
@@ -83,10 +82,9 @@ const createUrl = async function (req, res) {
     let data = JSON.parse(urldata);
 
     if (data)
-      return res.status(201).send({
-        status: true,
-        message: `provided url exist in redis`,
-        data: data,
+      return res.status(400).send({
+        status: false,
+        message: `provided ${data.longUrl}url exist in redis`
       });
     else {
       // check if url already shortened
@@ -96,8 +94,7 @@ const createUrl = async function (req, res) {
         await SET_ASYNC(`${longUrl}`, JSON.stringify(uniqueUrl));
         return res.status(400).send({
           status: false,
-          message: `provided ${uniqueUrl.longUrl} url exist in db`,
-          data: uniqueUrl,
+          message: `provided ${uniqueUrl.longUrl} url exist in db`
         });
       }
       // generate urlCode
@@ -109,8 +106,7 @@ const createUrl = async function (req, res) {
         await SET_ASYNC(`${longUrl}`, JSON.stringify(urlCode));
         return res.status(400).send({
           status: false,
-          message: "urlCode already exist",
-          data: urlCode,
+          message: "urlCode already exist"
         });
       }
 
@@ -119,16 +115,16 @@ const createUrl = async function (req, res) {
       let obj = {
         longUrl: longUrl,
         shortUrl: shortUrl,
-        urlCode: id,
+        urlCode: id
       };
 
       // creating url document
       let url = await urlModel.create(obj);
-      await SET_ASYNC(`${longUrl}`, JSON.stringify(obj),"PX" , 1000);
+      await SET_ASYNC(`${longUrl}`, JSON.stringify(obj));
       return res.status(201).send({
         status: true,
         message: "created",
-        data: url,
+        data: url
       });
     }
   } catch (error) {
@@ -168,3 +164,7 @@ const getLinkWithShortUrl = async function (req, res) {
 };
 
 module.exports = { createUrl, getLinkWithShortUrl };
+
+
+
+
