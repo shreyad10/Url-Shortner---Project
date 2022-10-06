@@ -3,7 +3,7 @@ const shortId = require("short-id");
 const validUrl = require("valid-url");
 const isUrl = require("is-valid-http-url");
 const { default: mongoose } = require("mongoose");
-const axios = require("axios")
+const axios = require("axios");
 
 const isValid = function (value) {
   if (typeof value === "undefined" || value === null) return false;
@@ -38,7 +38,7 @@ redisClient.on("connect", async function () {
 
 const SET_ASYNC = promisify(redisClient.SET).bind(redisClient);
 const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
-const DEL_ASYNC = promisify(redisClient.DEL).bind(redisClient);
+// const DEL_ASYNC = promisify(redisClient.DEL).bind(redisClient);
 
 const createUrl = async function (req, res) {
   try {
@@ -50,7 +50,7 @@ const createUrl = async function (req, res) {
     }
 
     // fetch longUrl and baseurl
-    let longUrl = req.body.longUrl;
+    let longUrl = req.body.longUrl.trim();
     let baseUrl = "http://localhost:3000/";
 
     // validating url
@@ -59,15 +59,26 @@ const createUrl = async function (req, res) {
         .status(400)
         .send({ status: false, message: "Please provide valid long url" });
 
-    if (!validUrl.isUri(longUrl.trim())) {
-      return res.status(400).send({ status: false, message: "Invalid Url" });
-    }
+    // axios call to check that link is working or not
+    let urlFound = false;
+    let Url = {
+      method: "get",
+      url: longUrl,
+    };
 
-    if (!isUrl(longUrl.trim())) {
+    await axios(Url)
+      .then((res) => {
+        if (res.status == 201 || res.status == 200) urlFound = true;
+      })
+      .catch((err) => {});
+
+    if (urlFound == false) {
       return res
         .status(400)
-        .send({ status: false, message: `Invalid Url format of ${longUrl}` });
+        .send({ status: false, message: "Invalid URL axios" });
     }
+
+    // check if url is already cached or present in redis
     let urldata = await GET_ASYNC(`${longUrl}`);
     let data = JSON.parse(urldata);
 
@@ -102,24 +113,6 @@ const createUrl = async function (req, res) {
           data: urlCode,
         });
       }
-      // axios call to check that link is working or not
-      let urlFound = false;
-      let Url = {
-        method: "get",
-        url: longUrl,
-      };
-
-      await axios(Url)
-        .then((res) => {
-          if (res.status == 201 || res.status == 200) urlFound = true;
-        })
-        .catch((err) => {});
-
-      if (urlFound == false) {
-        return res
-          .status(400)
-          .send({ status: false, message: "Invalid URL axios" });
-      }
 
       // creating shortUrl
       let shortUrl = baseUrl + id;
@@ -131,7 +124,7 @@ const createUrl = async function (req, res) {
 
       // creating url document
       let url = await urlModel.create(obj);
-      await SET_ASYNC(`${longUrl}`, JSON.stringify(obj));
+      await SET_ASYNC(`${longUrl}`, JSON.stringify(obj),"PX" , 1000);
       return res.status(201).send({
         status: true,
         message: "created",
