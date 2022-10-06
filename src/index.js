@@ -15,7 +15,7 @@ mongoose.connect("mongodb+srv://Shreyad:ULCn2m1OMNHF7ME0@cluster0.ufn2trt.mongod
 
 app.use('', route);
 app.use('/*', function (req, res) {
-    return res.status(400).send({ status: false, msg: 'You Are In Wrong Path' })
+    return res.status(404).send({ status: false, msg: 'You Are In Wrong Path' })
 })
 
 
