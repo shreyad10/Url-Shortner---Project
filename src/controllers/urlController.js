@@ -82,21 +82,23 @@ const createUrl = async function (req, res) {
     if (data)
       return res.status(400).send({
         status: false,
-        message: `provided ${data.longUrl}url exist in redis`
+        message: `provided ${data.longUrl}url exist in redis`,
+        data : data
       });
     else {
       // check if url already shortened
 
-      let uniqueUrl = await urlModel.findOne({ longUrl: longUrl });
+      let uniqueUrl = await urlModel.findOne({ longUrl: longUrl }) ;
       if (uniqueUrl) {
         await SET_ASYNC(`${longUrl}`, JSON.stringify(uniqueUrl));
         return res.status(400).send({
           status: false,
-          message: `provided ${uniqueUrl.longUrl} url exist in db`
+          message: `provided ${uniqueUrl.longUrl} url exist in db`,
+          data : uniqueUrl
         });
       }
       // generate urlCode
-      let id = shortId.generate(longUrl);
+      let id = shortId.generate(longUrl).toLowerCase();
 
       // check if urlCode already present
       let urlCode = await urlModel.findOne({ urlCode: id });
@@ -104,7 +106,8 @@ const createUrl = async function (req, res) {
         await SET_ASYNC(`${longUrl}`, JSON.stringify(urlCode));
         return res.status(400).send({
           status: false,
-          message: "urlCode already exist"
+          message: "urlCode already exist",
+          data : urlCode
         });
       }
 
