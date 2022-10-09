@@ -1,7 +1,5 @@
 const urlModel = require("../models/urlModel");
-const shortId = require("short-id");
-const validUrl = require("valid-url");
-const isUrl = require("is-valid-http-url");
+const shortId = require("short-id")
 const { default: mongoose } = require("mongoose");
 const axios = require("axios");
 
@@ -36,8 +34,8 @@ redisClient.on("connect", async function () {
 
 //Connection setup for redis
 
-const SET_ASYNC = promisify(redisClient.SET).bind(redisClient);
-const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
+const SET_ASYNC = promisify(redisClient.SET).bind(redisClient); // redis server will only listen to connections made to the address specified in the bind option. 
+const GET_ASYNC = promisify(redisClient.GET).bind(redisClient); //return promise-object, with help of callback function
 
 const createUrl = async function (req, res) {
   try {
